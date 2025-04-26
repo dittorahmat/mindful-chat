@@ -50,15 +50,16 @@ export default function MindfulChat() {
       text: trimmedInput,
     };
 
-    // Add user message to state immediately
+    // Create the array with the new user message
     const updatedMessagesWithUser = [...messages, newUserMessage];
+    // Update state immediately to show user message
     setMessages(updatedMessagesWithUser);
     setInputValue('');
     setIsLoading(true);
     setError(null);
 
     try {
-      // Format chat history for the AI using the state that includes the new user message
+      // Format chat history for the AI using the array that *already includes* the new user message
       const chatHistoryString = updatedMessagesWithUser
         .map(msg => `${msg.sender === 'user' ? 'User' : 'AI'}: ${msg.text}`)
         .join('\n');
@@ -71,13 +72,14 @@ export default function MindfulChat() {
         sender: 'ai',
         text: aiResponse.feedback,
       };
-      // Add AI message to the state that already includes the user message
-      setMessages(prevMessages => [...prevMessages, aiMessage]);
+      // Update state by adding the AI message to the array that *already contains* the user message
+      setMessages([...updatedMessagesWithUser, aiMessage]);
 
     } catch (err) {
       console.error('Error getting AI feedback:', err);
       setError('Sorry, I encountered an error trying to respond. Please try again.');
-      // Do not revert messages state here, keep the user message visible
+      // Revert to the state *with* the user's message if AI fails
+      setMessages(updatedMessagesWithUser);
     } finally {
       setIsLoading(false);
     }
